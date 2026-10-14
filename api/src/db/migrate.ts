@@ -3,11 +3,10 @@ import path from 'node:path';
 
 import { pool } from './pool';
 
-// Le schema de reference vit a la racine du monorepo et constitue la toute
-// premiere migration (0001_init). Les migrations suivantes sont des fichiers
-// horodates places dans /api/migrations et appliques dans l'ordre.
-const ROOT_SCHEMA = path.resolve(__dirname, '../../../schema.sql');
-const MIGRATIONS_DIR = path.resolve(__dirname, '../../migrations');
+// Les migrations SQL vivent a la racine du monorepo, dans db/migrations, et sont
+// appliquees dans l'ordre alphabetique du nom de fichier. 001_initial_schema.sql
+// est la toute premiere migration.
+const MIGRATIONS_DIR = path.resolve(__dirname, '../../../db/migrations');
 
 interface Migration {
   id: string;
@@ -15,24 +14,23 @@ interface Migration {
 }
 
 function listMigrations(): Migration[] {
-  const migrations: Migration[] = [];
-
-  if (!fs.existsSync(ROOT_SCHEMA)) {
-    throw new Error(`Fichier de schema introuvable : ${ROOT_SCHEMA}`);
-  }
-  migrations.push({ id: '0001_init', filePath: ROOT_SCHEMA });
-
-  if (fs.existsSync(MIGRATIONS_DIR)) {
-    const files = fs
-      .readdirSync(MIGRATIONS_DIR)
-      .filter((file) => file.endsWith('.sql'))
-      .sort();
-    for (const file of files) {
-      migrations.push({ id: file.replace(/\.sql$/, ''), filePath: path.join(MIGRATIONS_DIR, file) });
-    }
+  if (!fs.existsSync(MIGRATIONS_DIR)) {
+    throw new Error(`Dossier de migrations introuvable : ${MIGRATIONS_DIR}`);
   }
 
-  return migrations;
+  const files = fs
+    .readdirSync(MIGRATIONS_DIR)
+    .filter((file) => file.endsWith('.sql'))
+    .sort();
+
+  if (files.length === 0) {
+    throw new Error(`Aucune migration trouvee dans ${MIGRATIONS_DIR}`);
+  }
+
+  return files.map((file) => ({
+    id: file.replace(/\.sql$/, ''),
+    filePath: path.join(MIGRATIONS_DIR, file),
+  }));
 }
 
 async function ensureMigrationsTable(): Promise<void> {

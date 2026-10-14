@@ -1,9 +1,9 @@
 # Baraka Fish HD - Points a valider (ambiguities / contradictions)
 
 Fichiers de reference : `AGENTS.md`, `CGU.md`, `schema.sql`.
-Note : le chemin `db/migrations/001_initial_schema.sql` mentionne dans certaines
-instructions n'existe pas. Le schema reel est `schema.sql` a la racine, applique
-comme migration `0001_init` par `api/src/db/migrate.ts`.
+Note : les migrations SQL vivent dans `db/migrations/` a la racine du monorepo et
+sont appliquees par `api/src/db/migrate.ts`. La premiere est
+`001_initial_schema.sql` (snapshot de conception egalement dans `schema.sql`).
 
 Statut : a trancher avant les etapes indiquees ([TODO]).
 
