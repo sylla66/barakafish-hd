@@ -16,6 +16,8 @@ export default defineConfig({
       JWT_EXPIRES_IN: '7d',
       CORS_ORIGIN: 'http://localhost:5173',
       OTP_PROVIDER: 'console',
+      STORAGE_PROVIDER: 'local',
+      UPLOAD_DIR: './.test-uploads',
     },
   },
 });

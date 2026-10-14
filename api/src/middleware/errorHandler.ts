@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import multer from 'multer';
 import { ZodError } from 'zod';
 
 import { isProduction } from '../config/env';
@@ -46,6 +47,21 @@ export function errorHandler(
       },
     };
     res.status(error.statusCode).json(body);
+    return;
+  }
+
+  // Erreurs d'upload remontees par multer (taille, nombre de fichiers...).
+  if (error instanceof multer.MulterError) {
+    const tooLarge = error.code === 'LIMIT_FILE_SIZE';
+    const body: ErrorBody = {
+      error: {
+        code: tooLarge ? 'fichier_trop_volumineux' : 'fichier_invalide',
+        message: tooLarge
+          ? 'Fichier trop volumineux (5 Mo maximum).'
+          : "L'envoi du fichier est invalide.",
+      },
+    };
+    res.status(tooLarge ? 413 : 422).json(body);
     return;
   }
 

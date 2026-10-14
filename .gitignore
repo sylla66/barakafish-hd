@@ -33,6 +33,7 @@ coverage/
 
 # Local uploads (StorageProvider local)
 api/uploads/
+api/.test-uploads/
 
 # PWA build artifacts
 web/dist/

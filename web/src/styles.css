@@ -95,7 +95,8 @@ body {
   font-size: 0.8rem;
 }
 
-.champ input:not([type='checkbox']) {
+.champ input:not([type='checkbox']),
+.champ textarea {
   padding: 0.7rem 0.75rem;
   border: 1px solid var(--couleur-bordure);
   border-radius: 0.5rem;
@@ -103,7 +104,17 @@ body {
   font-family: inherit;
 }
 
-.champ input:focus-visible {
+.champ textarea {
+  resize: vertical;
+}
+
+.champ input[type='file'] {
+  padding: 0.5rem;
+  background: #f8fafc;
+}
+
+.champ input:focus-visible,
+.champ textarea:focus-visible {
   outline: 2px solid var(--couleur-primaire);
   outline-offset: 1px;
   border-color: var(--couleur-primaire);
@@ -180,5 +191,36 @@ body {
 
 .info {
   background: rgba(14, 116, 144, 0.08);
+  color: var(--couleur-texte-doux);
+}
+
+.statut {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.statut--pending {
+  background: rgba(202, 138, 4, 0.15);
+  color: #a16207;
+}
+
+.statut--verified {
+  background: rgba(21, 128, 61, 0.15);
+  color: var(--couleur-succes);
+}
+
+.statut--rejected,
+.statut--suspended {
+  background: rgba(185, 28, 28, 0.15);
+  color: var(--couleur-erreur);
+}
+
+.liste-docs {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
   color: var(--couleur-texte-doux);
 }
