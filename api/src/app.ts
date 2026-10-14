@@ -4,7 +4,9 @@ import helmet from 'helmet';
 
 import { env } from './config/env';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { authRouter } from './modules/auth/auth.routes';
 import { healthRouter } from './modules/health/health.routes';
+import { usersRouter } from './modules/users/users.routes';
 
 // Construction de l'application Express. Exportee separement de l'ecoute reseau
 // pour permettre les tests via supertest.
@@ -23,6 +25,8 @@ export function createApp(): Express {
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
   app.use('/health', healthRouter);
+  app.use('/auth', authRouter);
+  app.use('/me', usersRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
