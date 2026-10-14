@@ -127,6 +127,9 @@ export default function SellerStatusPage() {
       </section>
 
       <p className="page__lien">
+        <Link to="/vendeur/annonces">Gerer mes annonces</Link>
+      </p>
+      <p className="page__lien">
         <Link to="/vendeur/inscription">Modifier le profil / renvoyer des documents</Link>
       </p>
       <p className="page__lien">

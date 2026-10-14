@@ -96,12 +96,14 @@ body {
 }
 
 .champ input:not([type='checkbox']),
+.champ select,
 .champ textarea {
   padding: 0.7rem 0.75rem;
   border: 1px solid var(--couleur-bordure);
   border-radius: 0.5rem;
   font-size: 1rem;
   font-family: inherit;
+  background: #ffffff;
 }
 
 .champ textarea {
@@ -223,4 +225,95 @@ body {
   margin: 0.5rem 0 0;
   padding-left: 1.25rem;
   color: var(--couleur-texte-doux);
+}
+
+.statut--draft {
+  background: rgba(71, 85, 105, 0.15);
+  color: var(--couleur-texte-doux);
+}
+
+.statut--active {
+  background: rgba(21, 128, 61, 0.15);
+  color: var(--couleur-succes);
+}
+
+.statut--sold_out {
+  background: rgba(202, 138, 4, 0.15);
+  color: #a16207;
+}
+
+.statut--archived {
+  background: rgba(15, 23, 42, 0.1);
+  color: var(--couleur-texte-doux);
+}
+
+.annonces {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.annonce {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 0.75rem;
+}
+
+.annonce__photo {
+  width: 84px;
+  height: 84px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #f1f5f9;
+}
+
+.annonce__photo--vide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--couleur-texte-doux);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.annonce__corps {
+  min-width: 0;
+  flex: 1;
+}
+
+.annonce__titre {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.annonce__titre .statut {
+  margin-top: 0;
+}
+
+.annonce__meta {
+  margin: 0.25rem 0 0;
+  color: var(--couleur-texte-doux);
+  font-size: 0.85rem;
+}
+
+.annonce__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.annonce__actions .bouton,
+.annonce__actions .bouton--danger {
+  margin-top: 0;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
 }

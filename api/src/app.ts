@@ -7,7 +7,9 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { adminRouter } from './modules/admin/admin.routes';
 import { authRouter } from './modules/auth/auth.routes';
 import { healthRouter } from './modules/health/health.routes';
+import { listingsRouter } from './modules/listings/listings.routes';
 import { sellersRouter } from './modules/sellers/sellers.routes';
+import { speciesRouter } from './modules/species/species.routes';
 import { usersRouter } from './modules/users/users.routes';
 
 // Construction de l'application Express. Exportee separement de l'ecoute reseau
@@ -30,6 +32,8 @@ export function createApp(): Express {
   app.use('/auth', authRouter);
   app.use('/me', usersRouter);
   app.use('/sellers', sellersRouter);
+  app.use('/species', speciesRouter);
+  app.use('/listings', listingsRouter);
   app.use('/admin', adminRouter);
 
   app.use(notFoundHandler);
