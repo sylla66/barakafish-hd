@@ -58,3 +58,5 @@ Abonnements facturés automatiquement, annonces sponsorisées, livraison intégr
 - Messages d'erreur clairs et en français pour l'utilisateur.
 - Chaque endpoint a au moins un test de succès et un test d'erreur.
 - Commits courts et atomiques, un par fonctionnalité.
+- Une branche par tâche, jamais de push direct sur `main`. Nommage : `feat/<etape-ou-sujet>`, `fix/<sujet>`, `chore/<sujet>`, `docs/<sujet>` (ex. `feat/etape-4-annonces`).
+- Toute tâche se termine par une Pull Request vers `main` (revue + `npm test` / `lint` verts avant fusion).
