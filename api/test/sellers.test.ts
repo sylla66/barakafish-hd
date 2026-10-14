@@ -170,6 +170,20 @@ describe('POST /sellers/documents', () => {
     expect(res.body.profile).toMatchObject({ hasIdentityDocument: true, hasFacilityPhoto: true, hasSanitaryDocument: false });
   });
 
+  it('enregistre le justificatif professionnel optionnel (mareyeur / RCCM)', async () => {
+    const account = await createSeller();
+
+    const res = await request(app)
+      .post('/sellers/documents')
+      .set(authHeader(account.token))
+      .attach('identity_document', Buffer.from('jpeg-identity'), { filename: 'id.jpg', contentType: 'image/jpeg' })
+      .attach('facility_photo', Buffer.from('jpeg-facility'), { filename: 'facility.png', contentType: 'image/png' })
+      .attach('business_document', Buffer.from('rccm-pdf'), { filename: 'rccm.pdf', contentType: 'application/pdf' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.profile.hasBusinessDocument).toBe(true);
+  });
+
   it('exige la piece d identite', async () => {
     const account = await createSeller();
 
@@ -236,6 +250,30 @@ describe('documents sensibles', () => {
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toContain('image/jpeg');
     expect(res.body).toEqual(Buffer.from('secret-identity'));
+  });
+
+  it('reserve le justificatif professionnel aux admins', async () => {
+    const account = await createSeller();
+    await request(app)
+      .post('/sellers/documents')
+      .set(authHeader(account.token))
+      .attach('identity_document', Buffer.from('x'), { filename: 'id.jpg', contentType: 'image/jpeg' })
+      .attach('facility_photo', Buffer.from('x'), { filename: 'facility.png', contentType: 'image/png' })
+      .attach('business_document', Buffer.from('rccm-secret'), { filename: 'rccm.pdf', contentType: 'application/pdf' });
+
+    const ownerAttempt = await request(app)
+      .get(`/sellers/${account.userId}/documents/business`)
+      .set(authHeader(account.token));
+    expect(ownerAttempt.status).toBe(403);
+
+    const admin = await signup(nextPhone(), 'Admin Rccm');
+    await makeAdmin(admin.userId);
+
+    const adminAttempt = await request(app)
+      .get(`/sellers/${account.userId}/documents/business`)
+      .set(authHeader(admin.token));
+    expect(adminAttempt.status).toBe(200);
+    expect(adminAttempt.body).toEqual(Buffer.from('rccm-secret'));
   });
 
   it('autorise le proprietaire a voir sa photo d installation', async () => {

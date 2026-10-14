@@ -22,6 +22,7 @@ interface SellerRow {
   id_document_url: string | null;
   sanitary_doc_url: string | null;
   facility_photo_url: string | null;
+  business_document_url: string | null;
   rejection_reason: string | null;
   verified_at: Date | null;
 }
@@ -34,7 +35,7 @@ interface AdminSellerRow extends SellerRow {
 
 const SELLER_COLUMNS = `user_id, shop_name, description, zone, address, status,
   rating_avg, rating_count, id_document_url, sanitary_doc_url, facility_photo_url,
-  rejection_reason, verified_at`;
+  business_document_url, rejection_reason, verified_at`;
 
 function toOwnProfile(row: SellerRow): SellerOwnProfile {
   return {
@@ -50,6 +51,7 @@ function toOwnProfile(row: SellerRow): SellerOwnProfile {
     hasIdentityDocument: row.id_document_url !== null,
     hasSanitaryDocument: row.sanitary_doc_url !== null,
     hasFacilityPhoto: row.facility_photo_url !== null,
+    hasBusinessDocument: row.business_document_url !== null,
     rejectionReason: row.rejection_reason,
     verifiedAt: row.verified_at ? row.verified_at.toISOString() : null,
   };
@@ -151,6 +153,7 @@ export interface SellerDocumentFiles {
   identity?: Express.Multer.File;
   sanitary?: Express.Multer.File;
   facility?: Express.Multer.File;
+  business?: Express.Multer.File;
 }
 
 export async function saveDocuments(
@@ -196,15 +199,24 @@ export async function saveDocuments(
         category,
       })
     : null;
+  const business = files.business
+    ? await storage.saveFile({
+        buffer: files.business.buffer,
+        originalName: files.business.originalname,
+        mimeType: files.business.mimetype,
+        category,
+      })
+    : null;
 
   const result = await pool.query<SellerRow>(
     `UPDATE seller_profiles
         SET id_document_url = $2,
             facility_photo_url = $3,
-            sanitary_doc_url = COALESCE($4, sanitary_doc_url)
+            sanitary_doc_url = COALESCE($4, sanitary_doc_url),
+            business_document_url = COALESCE($5, business_document_url)
       WHERE user_id = $1
       RETURNING ${SELLER_COLUMNS}`,
-    [userId, identity.key, facility.key, sanitary ? sanitary.key : null],
+    [userId, identity.key, facility.key, sanitary ? sanitary.key : null, business ? business.key : null],
   );
 
   if (!result.rows[0]) {
@@ -240,8 +252,8 @@ export async function listForAdmin(status?: SellerStatus): Promise<AdminSellerLi
   const result = await pool.query<AdminSellerRow>(
     `SELECT sp.user_id, sp.shop_name, sp.description, sp.zone, sp.address, sp.status,
             sp.rating_avg, sp.rating_count, sp.id_document_url, sp.sanitary_doc_url,
-            sp.facility_photo_url, sp.rejection_reason, sp.verified_at, sp.created_at,
-            u.full_name, u.phone
+            sp.facility_photo_url, sp.business_document_url, sp.rejection_reason, sp.verified_at,
+            sp.created_at, u.full_name, u.phone
        FROM seller_profiles sp
        JOIN users u ON u.id = sp.user_id
        ${where}
@@ -328,5 +340,7 @@ export async function getSellerDocumentKey(
       return row.sanitary_doc_url;
     case 'facility':
       return row.facility_photo_url;
+    case 'business':
+      return row.business_document_url;
   }
 }

@@ -22,10 +22,12 @@ function requireUser(req: Request) {
 }
 
 function parseDocumentType(value: string): SellerDocumentType {
-  if (value === 'identity' || value === 'sanitary' || value === 'facility') {
+  if (value === 'identity' || value === 'sanitary' || value === 'facility' || value === 'business') {
     return value;
   }
-  throw AppError.badRequest("Type de document inconnu. Valeurs acceptees : identity, sanitary, facility.");
+  throw AppError.badRequest(
+    'Type de document inconnu. Valeurs acceptees : identity, sanitary, facility, business.',
+  );
 }
 
 export async function createProfileHandler(req: Request, res: Response): Promise<void> {
@@ -56,6 +58,7 @@ export async function uploadDocumentsHandler(req: Request, res: Response): Promi
     identity: files.identity_document?.[0],
     sanitary: files.sanitary_document?.[0],
     facility: files.facility_photo?.[0],
+    business: files.business_document?.[0],
   };
 
   const profile = await saveDocuments(user.id, documentFiles);
@@ -67,9 +70,9 @@ export async function getPublicProfileHandler(req: Request, res: Response): Prom
   res.status(200).json({ profile });
 }
 
-// Telechargement des documents. Les pieces d'identite et documents sanitaires
-// sont reserves aux administrateurs ; la photo de l'installation reste visible
-// par le proprietaire et les admins.
+// Telechargement des documents. Les pieces d'identite, documents sanitaires et
+// justificatifs professionnels (mareyeur/RCCM) sont reserves aux administrateurs ;
+// la photo de l'installation reste visible par le proprietaire et les admins.
 export async function downloadDocumentHandler(req: Request, res: Response): Promise<void> {
   const user = requireUser(req);
   const sellerId = req.params.id;
@@ -77,7 +80,7 @@ export async function downloadDocumentHandler(req: Request, res: Response): Prom
 
   const isAdmin = user.isAdmin;
   const isOwner = user.id === sellerId;
-  const isSensitive = type === 'identity' || type === 'sanitary';
+  const isSensitive = type !== 'facility';
 
   if (isSensitive && !isAdmin) {
     throw AppError.forbidden("Ce document n'est accessible qu'aux administrateurs.");

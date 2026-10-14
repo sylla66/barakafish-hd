@@ -28,6 +28,7 @@ export default function BecomeSeller() {
   const [identity, setIdentity] = useState<File | null>(null);
   const [sanitary, setSanitary] = useState<File | null>(null);
   const [facility, setFacility] = useState<File | null>(null);
+  const [business, setBusiness] = useState<File | null>(null);
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,6 +108,9 @@ export default function BecomeSeller() {
     form.append('facility_photo', facility);
     if (sanitary) {
       form.append('sanitary_document', sanitary);
+    }
+    if (business) {
+      form.append('business_document', business);
     }
 
     setIsSubmitting(true);
@@ -211,6 +215,16 @@ export default function BecomeSeller() {
               onChange={(e) => setFacility(e.target.files?.[0] ?? null)}
               required
             />
+          </label>
+
+          <label className="champ">
+            <span>Justificatif professionnel (optionnel)</span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,application/pdf"
+              onChange={(e) => setBusiness(e.target.files?.[0] ?? null)}
+            />
+            <small>Carte de mareyeur ou registre de commerce (RCCM).</small>
           </label>
 
           <button type="submit" className="bouton" disabled={isSubmitting}>

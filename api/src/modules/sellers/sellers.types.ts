@@ -1,6 +1,6 @@
 export type SellerStatus = 'pending' | 'verified' | 'suspended' | 'rejected';
 
-export type SellerDocumentType = 'identity' | 'sanitary' | 'facility';
+export type SellerDocumentType = 'identity' | 'sanitary' | 'facility' | 'business';
 
 // Vue "proprietaire" : le vendeur voit l'etat de ses documents (presence) mais
 // jamais leur contenu sensible via cette forme.
@@ -17,6 +17,7 @@ export interface SellerOwnProfile {
   hasIdentityDocument: boolean;
   hasSanitaryDocument: boolean;
   hasFacilityPhoto: boolean;
+  hasBusinessDocument: boolean;
   rejectionReason: string | null;
   verifiedAt: string | null;
 }

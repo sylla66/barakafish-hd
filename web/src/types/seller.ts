@@ -13,6 +13,7 @@ export interface SellerOwnProfile {
   hasIdentityDocument: boolean;
   hasSanitaryDocument: boolean;
   hasFacilityPhoto: boolean;
+  hasBusinessDocument: boolean;
   rejectionReason: string | null;
   verifiedAt: string | null;
 }

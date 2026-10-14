@@ -122,6 +122,7 @@ export default function SellerStatusPage() {
           <li>{profile.hasIdentityDocument ? 'Piece d\'identite recue' : "Piece d'identite manquante"}</li>
           <li>{profile.hasSanitaryDocument ? 'Document sanitaire recu' : 'Document sanitaire non fourni'}</li>
           <li>{profile.hasFacilityPhoto ? "Photo de l'installation recue" : "Photo de l'installation manquante"}</li>
+          <li>{profile.hasBusinessDocument ? 'Justificatif professionnel recu' : 'Justificatif professionnel non fourni'}</li>
         </ul>
       </section>
 

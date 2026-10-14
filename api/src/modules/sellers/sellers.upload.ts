@@ -10,7 +10,7 @@ const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'application/pdf'
 // n'atterrit sur le disque sans passer par la couche de stockage.
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_FILE_SIZE_BYTES, files: 3 },
+  limits: { fileSize: MAX_FILE_SIZE_BYTES, files: 4 },
   fileFilter: (_req, file, callback) => {
     if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
       callback(AppError.badRequest('Format de fichier non autorise. Formats acceptes : JPG, PNG, PDF.'));
@@ -21,9 +21,11 @@ const upload = multer({
 });
 
 // Champs attendus : identite (obligatoire), document sanitaire (optionnel),
-// photo de l'installation (obligatoire).
+// photo de l'installation (obligatoire), justificatif professionnel (optionnel :
+// carte de mareyeur ou RCCM).
 export const sellerDocumentsUpload = upload.fields([
   { name: 'identity_document', maxCount: 1 },
   { name: 'sanitary_document', maxCount: 1 },
   { name: 'facility_photo', maxCount: 1 },
+  { name: 'business_document', maxCount: 1 },
 ]);
