@@ -157,20 +157,26 @@ describe('GET /sellers/:id (fiche publique)', () => {
 });
 
 describe('POST /sellers/documents', () => {
-  it('enregistre les documents (identite + installation)', async () => {
+  it('enregistre les documents (identite, installation et justificatif)', async () => {
     const account = await createSeller();
 
     const res = await request(app)
       .post('/sellers/documents')
       .set(authHeader(account.token))
       .attach('identity_document', Buffer.from('jpeg-identity'), { filename: 'id.jpg', contentType: 'image/jpeg' })
-      .attach('facility_photo', Buffer.from('jpeg-facility'), { filename: 'facility.png', contentType: 'image/png' });
+      .attach('facility_photo', Buffer.from('jpeg-facility'), { filename: 'facility.png', contentType: 'image/png' })
+      .attach('business_document', Buffer.from('rccm-pdf'), { filename: 'rccm.pdf', contentType: 'application/pdf' });
 
     expect(res.status).toBe(200);
-    expect(res.body.profile).toMatchObject({ hasIdentityDocument: true, hasFacilityPhoto: true, hasSanitaryDocument: false });
+    expect(res.body.profile).toMatchObject({
+      hasIdentityDocument: true,
+      hasFacilityPhoto: true,
+      hasBusinessDocument: true,
+      hasSanitaryDocument: false,
+    });
   });
 
-  it('enregistre le justificatif professionnel optionnel (mareyeur / RCCM)', async () => {
+  it('enregistre le justificatif professionnel (mareyeur / RCCM)', async () => {
     const account = await createSeller();
 
     const res = await request(app)
@@ -193,6 +199,19 @@ describe('POST /sellers/documents', () => {
       .attach('facility_photo', Buffer.from('x'), { filename: 'facility.png', contentType: 'image/png' });
 
     expect(res.status).toBe(400);
+  });
+
+  it('exige le justificatif professionnel', async () => {
+    const account = await createSeller();
+
+    const res = await request(app)
+      .post('/sellers/documents')
+      .set(authHeader(account.token))
+      .attach('identity_document', Buffer.from('x'), { filename: 'id.jpg', contentType: 'image/jpeg' })
+      .attach('facility_photo', Buffer.from('x'), { filename: 'facility.png', contentType: 'image/png' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.message).toMatch(/justificatif professionnel/i);
   });
 
   it('refuse un format de fichier non autorise', async () => {
@@ -223,7 +242,8 @@ describe('documents sensibles', () => {
       .post('/sellers/documents')
       .set(authHeader(account.token))
       .attach('identity_document', Buffer.from('secret'), { filename: 'id.jpg', contentType: 'image/jpeg' })
-      .attach('facility_photo', Buffer.from('x'), { filename: 'facility.png', contentType: 'image/png' });
+      .attach('facility_photo', Buffer.from('x'), { filename: 'facility.png', contentType: 'image/png' })
+      .attach('business_document', Buffer.from('x'), { filename: 'rccm.pdf', contentType: 'application/pdf' });
 
     const res = await request(app)
       .get(`/sellers/${account.userId}/documents/identity`)
@@ -238,7 +258,8 @@ describe('documents sensibles', () => {
       .post('/sellers/documents')
       .set(authHeader(account.token))
       .attach('identity_document', Buffer.from('secret-identity'), { filename: 'id.jpg', contentType: 'image/jpeg' })
-      .attach('facility_photo', Buffer.from('x'), { filename: 'facility.png', contentType: 'image/png' });
+      .attach('facility_photo', Buffer.from('x'), { filename: 'facility.png', contentType: 'image/png' })
+      .attach('business_document', Buffer.from('x'), { filename: 'rccm.pdf', contentType: 'application/pdf' });
 
     const admin = await signup(nextPhone(), 'Admin Doc');
     await makeAdmin(admin.userId);
@@ -282,7 +303,8 @@ describe('documents sensibles', () => {
       .post('/sellers/documents')
       .set(authHeader(account.token))
       .attach('identity_document', Buffer.from('x'), { filename: 'id.jpg', contentType: 'image/jpeg' })
-      .attach('facility_photo', Buffer.from('facility-bytes'), { filename: 'facility.png', contentType: 'image/png' });
+      .attach('facility_photo', Buffer.from('facility-bytes'), { filename: 'facility.png', contentType: 'image/png' })
+      .attach('business_document', Buffer.from('x'), { filename: 'rccm.pdf', contentType: 'application/pdf' });
 
     const res = await request(app)
       .get(`/sellers/${account.userId}/documents/facility`)
