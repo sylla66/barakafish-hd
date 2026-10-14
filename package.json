@@ -1,0 +1,27 @@
+{
+  "name": "baraka-fish-hd",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Baraka Fish HD - marketplace de poissons et fruits de mer (Senegal)",
+  "workspaces": [
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace api",
+    "dev:web": "npm run dev --workspace web",
+    "build": "npm run build --workspace api && npm run build --workspace web",
+    "test": "npm run test --workspace api",
+    "lint": "npm run lint --workspace api && npm run lint --workspace web",
+    "format": "prettier --write .",
+    "migrate": "npm run migrate --workspace api",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
