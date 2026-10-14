@@ -8,6 +8,15 @@ export interface ListingPhoto {
   url: string;
 }
 
+export interface ListingSeller {
+  userId: string;
+  shopName: string;
+  isVerified: boolean;
+  ratingAvg: number;
+  ratingCount: number;
+  zone: string;
+}
+
 export interface Listing {
   id: string;
   sellerId: string;
@@ -24,9 +33,16 @@ export interface Listing {
   pricePerKg: number;
   zone: string;
   status: ListingStatus;
+  sponsored: boolean;
+  seller: ListingSeller;
   photos: ListingPhoto[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface SearchListingsResponse {
+  listings: Listing[];
+  next_cursor: string | null;
 }
 
 export interface Species {
