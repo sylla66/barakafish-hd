@@ -10,6 +10,7 @@ import {
   getListingPhotoHandler,
   listMyListingsHandler,
   removePhotoHandler,
+  searchListingsHandler,
   updateListingHandler,
 } from './listings.controller';
 import { listingCreateUpload, listingPhotosUpload } from './listings.upload';
@@ -19,6 +20,9 @@ export const listingsRouter = Router();
 // Routes specifiques (doivent preceder /:id).
 listingsRouter.get('/mine', requireAuth, asyncHandler(listMyListingsHandler));
 listingsRouter.get('/photos/:photoId', asyncHandler(getListingPhotoHandler));
+
+// Recherche publique du catalogue.
+listingsRouter.get('/', asyncHandler(searchListingsHandler));
 
 listingsRouter.post(
   '/',

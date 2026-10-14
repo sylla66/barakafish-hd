@@ -81,3 +81,35 @@ export const updateListingSchema = z.object({
 
 export type CreateListingInput = z.infer<typeof createListingSchema>;
 export type UpdateListingInput = z.infer<typeof updateListingSchema>;
+
+// Parametre de requete booleen tolerant ('true'/'false'/'1'/'0').
+const booleanish = z
+  .enum(['true', 'false', '1', '0'])
+  .transform((value) => value === 'true' || value === '1');
+
+export const listingSortSchema = z.enum(['recent', 'price_asc', 'price_desc', 'rating']);
+export type ListingSortInput = z.infer<typeof listingSortSchema>;
+
+export const searchListingsQuerySchema = z.object({
+  species_id: z.coerce.number().int().positive().optional(),
+  category: z.string().trim().min(1).max(40).optional(),
+  state: listingStateSchema.optional(),
+  zone: z.string().trim().min(1).max(80).optional(),
+  price_min: z.coerce.number().int().min(0).optional(),
+  price_max: z.coerce.number().int().min(0).optional(),
+  seller_verified: booleanish.optional(),
+  q: z.string().trim().min(1).max(100).optional(),
+  sort: listingSortSchema.default('recent'),
+  cursor: z.string().trim().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+export type SearchListingsQuery = z.infer<typeof searchListingsQuerySchema>;
+
+// Contenu du curseur de pagination (cle keyset encodee en base64url).
+export const listingCursorSchema = z.object({
+  s: listingSortSchema,
+  sp: z.boolean(),
+  v: z.string(),
+  id: z.string().uuid(),
+});
+export type ListingCursor = z.infer<typeof listingCursorSchema>;

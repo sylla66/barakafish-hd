@@ -4,8 +4,14 @@ import { processListingPhoto } from '../../lib/image';
 import { getStorageProvider } from '../../providers/storage';
 import { assertSellerCanPublish } from '../sellers/sellers.service';
 import { speciesExists } from '../species/species.service';
-import type { CreateListingInput, UpdateListingInput } from './listings.schema';
-import type { Listing, ListingState, ListingStatus } from './listings.types';
+import {
+  listingCursorSchema,
+  type CreateListingInput,
+  type ListingCursor,
+  type SearchListingsQuery,
+  type UpdateListingInput,
+} from './listings.schema';
+import type { Listing, ListingSearchResult, ListingSort, ListingState, ListingStatus } from './listings.types';
 
 const MILLIS_PER_DAY = 24 * 60 * 60 * 1000;
 export const MAX_PHOTOS = 5;
@@ -26,6 +32,12 @@ interface ListingRow {
   price_per_kg: number;
   zone: string;
   status: ListingStatus;
+  sponsored: boolean;
+  shop_name: string;
+  seller_status: string;
+  rating_avg: string;
+  rating_count: number;
+  seller_zone: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -35,14 +47,21 @@ interface PhotoRow {
   position: number;
 }
 
+// Une annonce est "sponsorisee maintenant" si le drapeau est actif et que la mise
+// en avant n'est pas expiree. Jamais NULL (AND avec un booleen false).
+const SPONSORED_EXPR = `(l.is_sponsored AND l.sponsored_until IS NOT NULL AND l.sponsored_until > now())`;
+
 const LISTING_SELECT = `
   SELECT l.id, l.seller_id, l.species_id, s.name_fr AS species_name_fr, s.name_wo AS species_name_wo,
          l.title, l.description, l.state,
          to_char(l.caught_or_frozen_on, 'YYYY-MM-DD') AS caught_or_frozen_on,
          l.storage_conditions, l.quantity_kg, l.min_order_kg, l.price_per_kg, l.zone,
-         l.status, l.created_at, l.updated_at
+         l.status, l.created_at, l.updated_at,
+         ${SPONSORED_EXPR} AS sponsored,
+         sp.shop_name, sp.status AS seller_status, sp.rating_avg, sp.rating_count, sp.zone AS seller_zone
     FROM listings l
-    JOIN species s ON s.id = l.species_id`;
+    JOIN species s ON s.id = l.species_id
+    JOIN seller_profiles sp ON sp.user_id = l.seller_id`;
 
 function toListing(row: ListingRow, photos: PhotoRow[]): Listing {
   return {
@@ -61,6 +80,15 @@ function toListing(row: ListingRow, photos: PhotoRow[]): Listing {
     pricePerKg: row.price_per_kg,
     zone: row.zone,
     status: row.status,
+    sponsored: row.sponsored,
+    seller: {
+      userId: row.seller_id,
+      shopName: row.shop_name,
+      isVerified: row.seller_status === 'verified',
+      ratingAvg: Number(row.rating_avg),
+      ratingCount: row.rating_count,
+      zone: row.seller_zone,
+    },
     photos: photos.map((photo) => ({
       id: photo.id,
       position: photo.position,
@@ -77,6 +105,25 @@ async function fetchPhotos(listingId: string): Promise<PhotoRow[]> {
     [listingId],
   );
   return result.rows;
+}
+
+// Charge les photos de plusieurs annonces en une requete (evite le N+1 sur la recherche).
+async function fetchPhotosByListingIds(ids: string[]): Promise<Map<string, PhotoRow[]>> {
+  const map = new Map<string, PhotoRow[]>();
+  if (ids.length === 0) {
+    return map;
+  }
+  const result = await pool.query<PhotoRow & { listing_id: string }>(
+    `SELECT listing_id, id, position FROM listing_photos
+      WHERE listing_id = ANY($1::uuid[]) ORDER BY position ASC`,
+    [ids],
+  );
+  for (const row of result.rows) {
+    const list = map.get(row.listing_id) ?? [];
+    list.push({ id: row.id, position: row.position });
+    map.set(row.listing_id, list);
+  }
+  return map;
 }
 
 async function findListingRow(id: string): Promise<ListingRow | null> {
@@ -368,6 +415,130 @@ export async function getPhotoKey(photoId: string): Promise<string | null> {
     [photoId],
   );
   return result.rows[0]?.url ?? null;
+}
+
+// ===== Recherche =====
+
+const SORT_ORDER: Record<ListingSort, string> = {
+  recent: 'l.created_at DESC, l.id ASC',
+  price_asc: 'l.price_per_kg ASC, l.id ASC',
+  price_desc: 'l.price_per_kg DESC, l.id ASC',
+  rating: 'sp.rating_avg DESC, l.id ASC',
+};
+
+function encodeCursor(cursor: ListingCursor): string {
+  return Buffer.from(JSON.stringify(cursor), 'utf8').toString('base64url');
+}
+
+function decodeCursor(raw: string): ListingCursor {
+  try {
+    const parsed: unknown = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8'));
+    return listingCursorSchema.parse(parsed);
+  } catch {
+    throw AppError.badRequest('Curseur de pagination invalide.');
+  }
+}
+
+function cursorValue(row: ListingRow, sort: ListingSort): string {
+  switch (sort) {
+    case 'recent':
+      return row.created_at.toISOString();
+    case 'rating':
+      return row.rating_avg;
+    case 'price_asc':
+    case 'price_desc':
+      return String(row.price_per_kg);
+  }
+}
+
+// Pagination par curseur (keyset) : on repart de la derniere ligne vue, ce qui
+// reste stable meme si des annonces sont creees entre deux pages.
+export async function searchListings(query: SearchListingsQuery): Promise<ListingSearchResult> {
+  const params: unknown[] = [];
+  const placeholder = (value: unknown): string => {
+    params.push(value);
+    return `$${params.length}`;
+  };
+
+  const conditions: string[] = ["l.status = 'active'"];
+
+  if (query.species_id !== undefined) conditions.push(`l.species_id = ${placeholder(query.species_id)}`);
+  if (query.category) conditions.push(`s.category = ${placeholder(query.category)}`);
+  if (query.state) conditions.push(`l.state = ${placeholder(query.state)}`);
+  if (query.zone) conditions.push(`l.zone = ${placeholder(query.zone)}`);
+  if (query.price_min !== undefined) conditions.push(`l.price_per_kg >= ${placeholder(query.price_min)}`);
+  if (query.price_max !== undefined) conditions.push(`l.price_per_kg <= ${placeholder(query.price_max)}`);
+  if (query.seller_verified !== undefined) {
+    conditions.push(query.seller_verified ? "sp.status = 'verified'" : "sp.status <> 'verified'");
+  }
+  if (query.q) {
+    const term = placeholder(`%${query.q}%`);
+    conditions.push(`(l.title ILIKE ${term} OR s.name_fr ILIKE ${term} OR s.name_wo ILIKE ${term})`);
+  }
+
+  let cursor: ListingCursor | null = null;
+  if (query.cursor) {
+    cursor = decodeCursor(query.cursor);
+    if (cursor.s !== query.sort) {
+      throw AppError.badRequest('Le tri ne correspond pas au curseur de pagination fourni.');
+    }
+  }
+
+  if (cursor) {
+    const sp = placeholder(cursor.sp);
+    const id = placeholder(cursor.id);
+    let comparison: string;
+    switch (query.sort) {
+      case 'recent': {
+        const v = placeholder(cursor.v);
+        comparison = `(l.created_at < ${v}::timestamptz OR (l.created_at = ${v}::timestamptz AND l.id > ${id}::uuid))`;
+        break;
+      }
+      case 'price_asc': {
+        const v = placeholder(cursor.v);
+        comparison = `(l.price_per_kg > ${v}::int OR (l.price_per_kg = ${v}::int AND l.id > ${id}::uuid))`;
+        break;
+      }
+      case 'price_desc': {
+        const v = placeholder(cursor.v);
+        comparison = `(l.price_per_kg < ${v}::int OR (l.price_per_kg = ${v}::int AND l.id > ${id}::uuid))`;
+        break;
+      }
+      case 'rating': {
+        const v = placeholder(cursor.v);
+        comparison = `(sp.rating_avg < ${v}::numeric OR (sp.rating_avg = ${v}::numeric AND l.id > ${id}::uuid))`;
+        break;
+      }
+    }
+    conditions.push(`((${SPONSORED_EXPR}) < ${sp}::boolean OR ((${SPONSORED_EXPR}) = ${sp}::boolean AND ${comparison}))`);
+  }
+
+  const limit = placeholder(query.limit + 1);
+  const orderBy = `${SPONSORED_EXPR} DESC, ${SORT_ORDER[query.sort]}`;
+
+  const result = await pool.query<ListingRow>(
+    `${LISTING_SELECT} WHERE ${conditions.join(' AND ')} ORDER BY ${orderBy} LIMIT ${limit}`,
+    params,
+  );
+
+  const hasMore = result.rows.length > query.limit;
+  const rows = hasMore ? result.rows.slice(0, query.limit) : result.rows;
+  const photosByListing = await fetchPhotosByListingIds(rows.map((row) => row.id));
+
+  const listings = rows.map((row) => toListing(row, photosByListing.get(row.id) ?? []));
+
+  let nextCursor: string | null = null;
+  if (hasMore && rows.length > 0) {
+    const last = rows[rows.length - 1];
+    nextCursor = encodeCursor({
+      s: query.sort,
+      sp: last.sponsored,
+      v: cursorValue(last, query.sort),
+      id: last.id,
+    });
+  }
+
+  return { listings, nextCursor };
 }
 
 // Note etape 6 : quand une commande fait tomber quantity_kg a 0, on passera le

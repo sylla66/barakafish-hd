@@ -2,7 +2,11 @@ import type { Request, Response } from 'express';
 
 import { AppError } from '../../lib/AppError';
 import { getStorageProvider } from '../../providers/storage';
-import { createListingSchema, updateListingSchema } from './listings.schema';
+import {
+  createListingSchema,
+  searchListingsQuerySchema,
+  updateListingSchema,
+} from './listings.schema';
 import {
   addListingPhotos,
   archiveListing,
@@ -11,6 +15,7 @@ import {
   getPhotoKey,
   listMyListings,
   removeListingPhoto,
+  searchListings,
   updateListing,
 } from './listings.service';
 
@@ -67,6 +72,13 @@ export async function removePhotoHandler(req: Request, res: Response): Promise<v
 export async function getListingHandler(req: Request, res: Response): Promise<void> {
   const listing = await getListing(req.params.id);
   res.status(200).json({ listing });
+}
+
+// Recherche publique : filtres, tri et pagination par curseur.
+export async function searchListingsHandler(req: Request, res: Response): Promise<void> {
+  const query = searchListingsQuerySchema.parse(req.query);
+  const { listings, nextCursor } = await searchListings(query);
+  res.status(200).json({ listings, next_cursor: nextCursor });
 }
 
 // Service public d'image : sert une photo d'annonce par son identifiant. Les
