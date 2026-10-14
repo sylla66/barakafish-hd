@@ -21,8 +21,8 @@ const upload = multer({
 });
 
 // Champs attendus : identite (obligatoire), document sanitaire (optionnel),
-// photo de l'installation (obligatoire), justificatif professionnel (optionnel :
-// carte de mareyeur ou RCCM).
+// photo de l'installation (obligatoire), justificatif professionnel
+// (obligatoire : carte de mareyeur ou RCCM).
 export const sellerDocumentsUpload = upload.fields([
   { name: 'identity_document', maxCount: 1 },
   { name: 'sanitary_document', maxCount: 1 },

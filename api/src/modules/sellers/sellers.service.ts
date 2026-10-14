@@ -175,6 +175,12 @@ export async function saveDocuments(
       { champ: 'facility_photo', message: 'Fichier requis.' },
     ]);
   }
+  if (!files.business) {
+    throw AppError.badRequest(
+      'Le justificatif professionnel (carte de mareyeur ou RCCM) est obligatoire.',
+      [{ champ: 'business_document', message: 'Fichier requis.' }],
+    );
+  }
 
   const storage = getStorageProvider();
   const category = `sellers/${userId}`;
@@ -199,24 +205,22 @@ export async function saveDocuments(
         category,
       })
     : null;
-  const business = files.business
-    ? await storage.saveFile({
-        buffer: files.business.buffer,
-        originalName: files.business.originalname,
-        mimeType: files.business.mimetype,
-        category,
-      })
-    : null;
+  const business = await storage.saveFile({
+    buffer: files.business.buffer,
+    originalName: files.business.originalname,
+    mimeType: files.business.mimetype,
+    category,
+  });
 
   const result = await pool.query<SellerRow>(
     `UPDATE seller_profiles
         SET id_document_url = $2,
             facility_photo_url = $3,
             sanitary_doc_url = COALESCE($4, sanitary_doc_url),
-            business_document_url = COALESCE($5, business_document_url)
+            business_document_url = $5
       WHERE user_id = $1
       RETURNING ${SELLER_COLUMNS}`,
-    [userId, identity.key, facility.key, sanitary ? sanitary.key : null, business ? business.key : null],
+    [userId, identity.key, facility.key, sanitary ? sanitary.key : null, business.key],
   );
 
   if (!result.rows[0]) {

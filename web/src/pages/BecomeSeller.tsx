@@ -102,15 +102,17 @@ export default function BecomeSeller() {
       setError("La photo de l'installation est obligatoire.");
       return;
     }
+    if (!business) {
+      setError('Le justificatif professionnel (carte de mareyeur ou RCCM) est obligatoire.');
+      return;
+    }
 
     const form = new FormData();
     form.append('identity_document', identity);
     form.append('facility_photo', facility);
+    form.append('business_document', business);
     if (sanitary) {
       form.append('sanitary_document', sanitary);
-    }
-    if (business) {
-      form.append('business_document', business);
     }
 
     setIsSubmitting(true);
@@ -218,11 +220,12 @@ export default function BecomeSeller() {
           </label>
 
           <label className="champ">
-            <span>Justificatif professionnel (optionnel)</span>
+            <span>Justificatif professionnel (obligatoire)</span>
             <input
               type="file"
               accept="image/jpeg,image/png,application/pdf"
               onChange={(e) => setBusiness(e.target.files?.[0] ?? null)}
+              required
             />
             <small>Carte de mareyeur ou registre de commerce (RCCM).</small>
           </label>
