@@ -19,6 +19,9 @@ export default function Home() {
         <Link className="bouton bouton--secondaire" to="/vendeur/inscription">
           Devenir vendeur
         </Link>
+        <Link className="bouton bouton--secondaire" to="/vendeur/annonces">
+          Mes annonces
+        </Link>
       </nav>
 
       <section className="page__contenu">
