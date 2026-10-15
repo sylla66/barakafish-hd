@@ -8,6 +8,7 @@ import MyListings from './pages/MyListings';
 import MyOrders from './pages/MyOrders';
 import OrderCreate from './pages/OrderCreate';
 import OrderDetail from './pages/OrderDetail';
+import PaymentReturn from './pages/PaymentReturn';
 import Profile from './pages/Profile';
 import SellerStatusPage from './pages/SellerStatus';
 
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/commandes" element={<MyOrders />} />
       <Route path="/commandes/:id" element={<OrderDetail />} />
       <Route path="/commander/:listingId" element={<OrderCreate />} />
+      <Route path="/paiement/:reference" element={<PaymentReturn />} />
     </Routes>
   );
 }

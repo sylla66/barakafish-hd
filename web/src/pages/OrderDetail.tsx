@@ -67,6 +67,22 @@ export default function OrderDetail() {
     }
   }
 
+  // Redirection vers la page de paiement du fournisseur (sequestre).
+  async function pay(): Promise<void> {
+    setBusy(true);
+    setError(null);
+    try {
+      const data = await apiRequest<{ paymentUrl: string }>(`/orders/${id}/pay`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+      window.location.href = data.paymentUrl;
+    } catch (err) {
+      setError(errorMessage(err));
+      setBusy(false);
+    }
+  }
+
   if (isAuthLoading || isLoading) {
     return (
       <main className="page page--etroite">
@@ -88,6 +104,7 @@ export default function OrderDetail() {
     );
   }
 
+  const canPay = order.role === 'buyer' && order.status === 'pending_payment';
   const canShip = order.role === 'seller' && order.status === 'paid';
   const canDeliver = order.role === 'seller' && order.status === 'shipped';
   const canCancel = order.role === 'buyer' && (order.status === 'pending_payment' || order.status === 'paid');
@@ -175,8 +192,13 @@ export default function OrderDetail() {
         </ol>
       </section>
 
-      {canShip || canDeliver || canCancel ? (
+      {canPay || canShip || canDeliver || canCancel ? (
         <div className="commande__actions">
+          {canPay ? (
+            <button type="button" className="bouton" disabled={busy} onClick={() => void pay()}>
+              {busy ? 'Redirection...' : 'Payer'}
+            </button>
+          ) : null}
           {canShip ? (
             <button type="button" className="bouton" disabled={busy} onClick={() => void runAction('ship')}>
               Marquer expediee

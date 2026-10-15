@@ -650,3 +650,40 @@ body {
   background: rgba(15, 23, 42, 0.1);
   color: var(--couleur-texte-doux);
 }
+
+/* ===== Paiement ===== */
+
+.statut--initiated {
+  background: rgba(202, 138, 4, 0.15);
+  color: #a16207;
+}
+
+.statut--succeeded {
+  background: rgba(21, 128, 61, 0.15);
+  color: var(--couleur-succes);
+}
+
+.statut--failed {
+  background: rgba(185, 28, 28, 0.15);
+  color: var(--couleur-erreur);
+}
+
+.paiement {
+  text-align: center;
+}
+
+.paiement__titre {
+  margin: 0;
+  color: var(--couleur-texte-doux);
+}
+
+.paiement__montant {
+  margin: 0.5rem 0 1rem;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--couleur-primaire-fonce);
+}
+
+.paiement .commande__actions {
+  justify-content: center;
+}

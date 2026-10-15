@@ -9,6 +9,8 @@ import { authRouter } from './modules/auth/auth.routes';
 import { healthRouter } from './modules/health/health.routes';
 import { listingsRouter } from './modules/listings/listings.routes';
 import { ordersRouter } from './modules/orders/orders.routes';
+import { paymentsRouter } from './modules/payments/payments.routes';
+import { webhooksRouter } from './modules/payments/webhooks.routes';
 import { sellersRouter } from './modules/sellers/sellers.routes';
 import { speciesRouter } from './modules/species/species.routes';
 import { usersRouter } from './modules/users/users.routes';
@@ -26,6 +28,9 @@ export function createApp(): Express {
       credentials: true,
     }),
   );
+  // Le webhook de paiement a besoin du corps BRUT pour verifier la signature :
+  // il est capture avant express.json et n'est pas reparse ensuite.
+  app.use('/webhooks/payment', express.raw({ type: '*/*', limit: '1mb' }));
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
@@ -36,6 +41,8 @@ export function createApp(): Express {
   app.use('/species', speciesRouter);
   app.use('/listings', listingsRouter);
   app.use('/orders', ordersRouter);
+  app.use('/payments', paymentsRouter);
+  app.use('/webhooks', webhooksRouter);
   app.use('/admin', adminRouter);
 
   app.use(notFoundHandler);

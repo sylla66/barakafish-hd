@@ -32,6 +32,12 @@ const envSchema = z.object({
   STORAGE_PROVIDER: z.enum(['local', 's3', 'cloudinary']).default('local'),
   UPLOAD_DIR: z.string().default('./uploads'),
 
+  // URL publique de l'API : utilisee pour construire les URL de redirection de
+  // paiement (page de simulation du fournisseur mock, retour apres paiement).
+  PUBLIC_API_URL: z.string().default('http://localhost:3000'),
+  // Secret HMAC des webhooks de paiement (regle 5 : la signature est verifiee).
+  PAYMENT_WEBHOOK_SECRET: z.string().min(16).default('baraka-fish-webhook-secret'),
+
   S3_ENDPOINT: z.string().optional(),
   S3_REGION: z.string().optional(),
   S3_BUCKET: z.string().optional(),
