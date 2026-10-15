@@ -8,6 +8,7 @@ import { adminRouter } from './modules/admin/admin.routes';
 import { authRouter } from './modules/auth/auth.routes';
 import { healthRouter } from './modules/health/health.routes';
 import { listingsRouter } from './modules/listings/listings.routes';
+import { ordersRouter } from './modules/orders/orders.routes';
 import { sellersRouter } from './modules/sellers/sellers.routes';
 import { speciesRouter } from './modules/species/species.routes';
 import { usersRouter } from './modules/users/users.routes';
@@ -34,6 +35,7 @@ export function createApp(): Express {
   app.use('/sellers', sellersRouter);
   app.use('/species', speciesRouter);
   app.use('/listings', listingsRouter);
+  app.use('/orders', ordersRouter);
   app.use('/admin', adminRouter);
 
   app.use(notFoundHandler);

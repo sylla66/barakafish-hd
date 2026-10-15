@@ -500,3 +500,153 @@ body {
     max-width: 960px;
   }
 }
+
+/* ===== Commandes ===== */
+
+.carte__action {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.commande__total {
+  margin: 1rem 0 0;
+}
+
+.commande__total small {
+  color: var(--couleur-texte-doux);
+}
+
+.commande__bloc {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 0.75rem;
+}
+
+.commande__bloc h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--couleur-primaire-fonce);
+}
+
+.commande__montants {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.commande__montants > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.commande__montants dt {
+  color: var(--couleur-texte-doux);
+}
+
+.commande__montants dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.commande__montants-total {
+  border-top: 1px solid var(--couleur-bordure);
+  padding-top: 0.35rem;
+}
+
+.commande__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.commande__actions .bouton--danger {
+  margin-top: 0;
+}
+
+.historique {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.historique__etape {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.historique__point {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 0.35rem;
+  flex-shrink: 0;
+  background: var(--couleur-primaire);
+}
+
+.historique__statut {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.historique__meta {
+  margin: 0.1rem 0 0;
+  color: var(--couleur-texte-doux);
+  font-size: 0.8rem;
+}
+
+.historique__note {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+}
+
+.statut--commande {
+  margin-top: 0;
+}
+
+.statut--pending_payment {
+  background: rgba(202, 138, 4, 0.15);
+  color: #a16207;
+}
+
+.statut--paid {
+  background: rgba(37, 99, 235, 0.15);
+  color: #1d4ed8;
+}
+
+.statut--shipped {
+  background: rgba(14, 116, 144, 0.15);
+  color: var(--couleur-primaire-fonce);
+}
+
+.statut--delivered,
+.statut--confirmed {
+  background: rgba(21, 128, 61, 0.15);
+  color: var(--couleur-succes);
+}
+
+.statut--released {
+  background: rgba(21, 128, 61, 0.25);
+  color: var(--couleur-succes);
+}
+
+.statut--disputed {
+  background: rgba(185, 28, 28, 0.15);
+  color: var(--couleur-erreur);
+}
+
+.statut--refunded,
+.statut--cancelled {
+  background: rgba(15, 23, 42, 0.1);
+  color: var(--couleur-texte-doux);
+}

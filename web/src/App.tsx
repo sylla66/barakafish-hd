@@ -5,6 +5,9 @@ import CreateListing from './pages/CreateListing';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import MyListings from './pages/MyListings';
+import MyOrders from './pages/MyOrders';
+import OrderCreate from './pages/OrderCreate';
+import OrderDetail from './pages/OrderDetail';
 import Profile from './pages/Profile';
 import SellerStatusPage from './pages/SellerStatus';
 
@@ -20,6 +23,9 @@ export default function App() {
       <Route path="/vendeur/statut" element={<SellerStatusPage />} />
       <Route path="/vendeur/annonces" element={<MyListings />} />
       <Route path="/vendeur/annonces/nouvelle" element={<CreateListing />} />
+      <Route path="/commandes" element={<MyOrders />} />
+      <Route path="/commandes/:id" element={<OrderDetail />} />
+      <Route path="/commander/:listingId" element={<OrderCreate />} />
     </Routes>
   );
 }

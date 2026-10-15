@@ -183,6 +183,9 @@ export default function Home() {
         <Link className="bouton bouton--secondaire" to="/vendeur/annonces">
           Mes annonces
         </Link>
+        <Link className="bouton bouton--secondaire" to="/commandes">
+          Mes commandes
+        </Link>
       </nav>
 
       <form
@@ -365,6 +368,9 @@ export default function Home() {
                       </span>
                     ) : null}
                   </p>
+                  <Link className="bouton bouton--secondaire carte__action" to={`/commander/${listing.id}`}>
+                    Commander
+                  </Link>
                 </div>
               </li>
             ))}

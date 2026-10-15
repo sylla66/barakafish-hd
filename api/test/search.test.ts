@@ -123,7 +123,11 @@ afterAll(async () => {
     await pool.query('DELETE FROM otp_codes WHERE phone = ANY($1::text[])', [phones]);
   }
   await closePool();
-  await rm(path.resolve('./.test-uploads'), { recursive: true, force: true });
+  // Dossier d uploads partage par les tests executes en parallele :
+  // on tolere une suppression concurrente (ENOTEMPTY).
+  await rm(path.resolve('./.test-uploads'), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(
+    () => undefined,
+  );
 });
 
 describe('GET /listings - filtres', () => {
