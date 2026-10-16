@@ -1,12 +1,12 @@
 import sharp from 'sharp';
 
-// Dimension maximale (largeur ou hauteur) des photos d'annonces. Les images sont
-// reduites (jamais agrandies) puis reencodees en JPEG pour alleger les envois sur
-// reseau mobile.
+// Dimension maximale (largeur ou hauteur) des images. Les photos sont reduites
+// (jamais agrandies) puis reencodees en JPEG pour alleger les envois sur reseau
+// mobile. Utilise pour les annonces, les photos de reception et les avis.
 export const MAX_IMAGE_DIMENSION = 1280;
 export const JPEG_QUALITY = 82;
 
-export async function processListingPhoto(buffer: Buffer): Promise<Buffer> {
+export async function processImage(buffer: Buffer): Promise<Buffer> {
   return sharp(buffer)
     .rotate() // applique l'orientation EXIF avant de la supprimer
     .resize({
@@ -18,3 +18,6 @@ export async function processListingPhoto(buffer: Buffer): Promise<Buffer> {
     .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
     .toBuffer();
 }
+
+// Alias historique conserve pour les photos d'annonces (etape 4).
+export const processListingPhoto = processImage;

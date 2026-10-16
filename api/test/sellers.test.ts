@@ -86,7 +86,11 @@ async function cleanup(): Promise<void> {
 afterAll(async () => {
   await cleanup();
   await closePool();
-  await rm(path.resolve('./.test-uploads'), { recursive: true, force: true });
+  // Dossier d uploads partage par les tests executes en parallele :
+  // on tolere une suppression concurrente (ENOTEMPTY).
+  await rm(path.resolve('./.test-uploads'), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(
+    () => undefined,
+  );
 });
 
 describe('POST /sellers/profile', () => {

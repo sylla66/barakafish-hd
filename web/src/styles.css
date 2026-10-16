@@ -500,3 +500,351 @@ body {
     max-width: 960px;
   }
 }
+
+/* ===== Commandes ===== */
+
+.carte__action {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.commande__total {
+  margin: 1rem 0 0;
+}
+
+.commande__total small {
+  color: var(--couleur-texte-doux);
+}
+
+.commande__bloc {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 0.75rem;
+}
+
+.commande__bloc h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--couleur-primaire-fonce);
+}
+
+.commande__montants {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.commande__montants > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.commande__montants dt {
+  color: var(--couleur-texte-doux);
+}
+
+.commande__montants dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.commande__montants-total {
+  border-top: 1px solid var(--couleur-bordure);
+  padding-top: 0.35rem;
+}
+
+.commande__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.commande__actions .bouton--danger {
+  margin-top: 0;
+}
+
+.historique {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.historique__etape {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.historique__point {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 0.35rem;
+  flex-shrink: 0;
+  background: var(--couleur-primaire);
+}
+
+.historique__statut {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.historique__meta {
+  margin: 0.1rem 0 0;
+  color: var(--couleur-texte-doux);
+  font-size: 0.8rem;
+}
+
+.historique__note {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+}
+
+.statut--commande {
+  margin-top: 0;
+}
+
+.statut--pending_payment {
+  background: rgba(202, 138, 4, 0.15);
+  color: #a16207;
+}
+
+.statut--paid {
+  background: rgba(37, 99, 235, 0.15);
+  color: #1d4ed8;
+}
+
+.statut--shipped {
+  background: rgba(14, 116, 144, 0.15);
+  color: var(--couleur-primaire-fonce);
+}
+
+.statut--delivered,
+.statut--confirmed {
+  background: rgba(21, 128, 61, 0.15);
+  color: var(--couleur-succes);
+}
+
+.statut--released {
+  background: rgba(21, 128, 61, 0.25);
+  color: var(--couleur-succes);
+}
+
+.statut--disputed {
+  background: rgba(185, 28, 28, 0.15);
+  color: var(--couleur-erreur);
+}
+
+.statut--refunded,
+.statut--cancelled {
+  background: rgba(15, 23, 42, 0.1);
+  color: var(--couleur-texte-doux);
+}
+
+/* ===== Paiement ===== */
+
+.statut--initiated {
+  background: rgba(202, 138, 4, 0.15);
+  color: #a16207;
+}
+
+.statut--succeeded {
+  background: rgba(21, 128, 61, 0.15);
+  color: var(--couleur-succes);
+}
+
+.statut--failed {
+  background: rgba(185, 28, 28, 0.15);
+  color: var(--couleur-erreur);
+}
+
+.paiement {
+  text-align: center;
+}
+
+.paiement__titre {
+  margin: 0;
+  color: var(--couleur-texte-doux);
+}
+
+.paiement__montant {
+  margin: 0.5rem 0 1rem;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--couleur-primaire-fonce);
+}
+
+.paiement .commande__actions {
+  justify-content: center;
+}
+
+/* ===== Reception et avis ===== */
+
+.fiche-vendeur__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.etoiles {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.etoile {
+  color: var(--couleur-bordure);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.etoile--pleine {
+  color: #eab308;
+}
+
+.etoiles__compte {
+  margin-left: 0.4rem;
+  color: var(--couleur-texte-doux);
+  font-size: 0.85rem;
+}
+
+.etoiles--saisie {
+  gap: 0.15rem;
+}
+
+.etoile-bouton {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--couleur-bordure);
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.etoile-bouton--active {
+  color: #eab308;
+}
+
+.commande__photo {
+  display: block;
+  margin-top: 0.75rem;
+  width: 100%;
+  max-width: 320px;
+  border-radius: 0.5rem;
+}
+
+.avis {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.avis__item {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.avis__item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.avis__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.avis__auteur {
+  font-weight: 600;
+}
+
+.avis__date {
+  margin: 0.15rem 0 0;
+  color: var(--couleur-texte-doux);
+  font-size: 0.8rem;
+}
+
+.avis__commentaire {
+  margin: 0.4rem 0 0;
+}
+
+.avis__photo {
+  display: block;
+  margin-top: 0.5rem;
+  width: 100%;
+  max-width: 200px;
+  border-radius: 0.5rem;
+}
+
+/* ===== Litiges ===== */
+
+.statut--litige {
+  margin-top: 0;
+}
+
+.statut--open,
+.statut--under_review {
+  background: rgba(202, 138, 4, 0.15);
+  color: #a16207;
+}
+
+.statut--resolved_refund,
+.statut--resolved_partial {
+  background: rgba(37, 99, 235, 0.15);
+  color: #1d4ed8;
+}
+
+.statut--resolved_release {
+  background: rgba(21, 128, 61, 0.15);
+  color: var(--couleur-succes);
+}
+
+.dispute__fil {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dispute__message {
+  padding: 0.75rem;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 0.75rem;
+  border-left: 4px solid var(--couleur-primaire);
+}
+
+.dispute__message--seller {
+  border-left-color: var(--couleur-succes);
+}
+
+.dispute__role {
+  color: var(--couleur-texte-doux);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.dispute__photo {
+  display: block;
+  margin-top: 0.5rem;
+  width: 100%;
+  max-width: 240px;
+  border-radius: 0.5rem;
+}

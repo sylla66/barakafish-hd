@@ -183,6 +183,9 @@ export default function Home() {
         <Link className="bouton bouton--secondaire" to="/vendeur/annonces">
           Mes annonces
         </Link>
+        <Link className="bouton bouton--secondaire" to="/commandes">
+          Mes commandes
+        </Link>
       </nav>
 
       <form
@@ -357,7 +360,7 @@ export default function Home() {
                     {listing.zone} - {listing.quantityKg} kg dispo (min {listing.minOrderKg} kg)
                   </p>
                   <p className="carte__vendeur">
-                    <span>{listing.seller.shopName}</span>
+                    <Link to={`/vendeurs/${listing.seller.userId}`}>{listing.seller.shopName}</Link>
                     {listing.seller.isVerified ? <span className="badge badge--verifie">Verifie</span> : null}
                     {listing.seller.ratingCount > 0 ? (
                       <span className="carte__note">
@@ -365,6 +368,9 @@ export default function Home() {
                       </span>
                     ) : null}
                   </p>
+                  <Link className="bouton bouton--secondaire carte__action" to={`/commander/${listing.id}`}>
+                    Commander
+                  </Link>
                 </div>
               </li>
             ))}

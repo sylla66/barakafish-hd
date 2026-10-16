@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { asyncHandler } from '../../lib/asyncHandler';
 import { requireAuth } from '../../middleware/auth';
+import { listSellerReviewsHandler } from '../reviews/reviews.controller';
 import {
   createProfileHandler,
   downloadDocumentHandler,
@@ -24,6 +25,9 @@ sellersRouter.post(
   sellerDocumentsUpload,
   asyncHandler(uploadDocumentsHandler),
 );
+
+// Avis publics d'un vendeur (fiche vendeur).
+sellersRouter.get('/:id/reviews', asyncHandler(listSellerReviewsHandler));
 
 // Fiche publique (aucune donnee sensible) et telechargement protege des documents.
 sellersRouter.get('/:id', asyncHandler(getPublicProfileHandler));

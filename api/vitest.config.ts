@@ -18,6 +18,9 @@ export default defineConfig({
       OTP_PROVIDER: 'console',
       STORAGE_PROVIDER: 'local',
       UPLOAD_DIR: './.test-uploads',
+      PAYMENT_PROVIDER: 'mock',
+      PAYMENT_WEBHOOK_SECRET: 'test-webhook-secret-16-chars-min',
+      PUBLIC_API_URL: 'http://localhost:3000',
     },
   },
 });
