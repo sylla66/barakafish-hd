@@ -1,6 +1,8 @@
 import type { AuthUser } from '../users/users.types';
 import { pool } from '../../db/pool';
 import { AppError } from '../../lib/AppError';
+import { processImage } from '../../lib/image';
+import { getStorageProvider } from '../../providers/storage';
 import { runOrderTransitionHooks } from './orders.hooks';
 import {
   DEFAULT_COMMISSION_RATE_BPS,
@@ -110,7 +112,7 @@ function toOrder(row: OrderRow, role: Order['role'], history: OrderHistoryEntry[
     autoReleaseAt: isoOrNull(row.auto_release_at),
     buyerConfirmedAt: isoOrNull(row.buyer_confirmed_at),
     releasedAt: isoOrNull(row.released_at),
-    receiptPhotoUrl: row.receipt_photo_url,
+    receiptPhotoUrl: row.receipt_photo_url ? `/orders/${row.id}/receipt-photo` : null,
     seller: {
       userId: row.seller_id,
       shopName: row.shop_name,
@@ -425,6 +427,80 @@ export async function deliverOrder(user: AuthUser, orderId: string): Promise<Ord
 
 export async function cancelOrder(user: AuthUser, orderId: string): Promise<Order> {
   return transitionOrder(orderId, 'cancelled', actorFromUser(user), 'Annulation par l\'acheteur.');
+}
+
+// Confirmation de reception par l'acheteur (etape 8) : enregistre la photo de
+// reception optionnelle, fait passer la commande a 'confirmed' puis libere
+// immediatement les fonds (AGENTS.md regle 3). Seul l'acheteur peut confirmer.
+export async function confirmReceipt(
+  user: AuthUser,
+  orderId: string,
+  file?: Express.Multer.File,
+): Promise<Order> {
+  const row = await findOrderRow(orderId);
+  if (!row) {
+    throw AppError.notFound('Commande introuvable.');
+  }
+  if (row.buyer_id !== user.id) {
+    throw AppError.forbidden("Seul l'acheteur peut confirmer la reception.");
+  }
+  if (row.status !== 'delivered') {
+    throw AppError.conflict("La reception ne peut etre confirmee qu'apres la livraison.");
+  }
+
+  if (file) {
+    let processed: Buffer;
+    try {
+      processed = await processImage(file.buffer);
+    } catch {
+      throw AppError.badRequest('La photo de reception est illisible (image invalide).');
+    }
+    const { key } = await getStorageProvider().saveFile({
+      buffer: processed,
+      originalName: file.originalname,
+      mimeType: 'image/jpeg',
+      category: `receipts/${orderId}`,
+    });
+    await pool.query('UPDATE orders SET receipt_photo_url = $2, updated_at = now() WHERE id = $1', [
+      orderId,
+      key,
+    ]);
+  }
+
+  await transitionOrder(
+    orderId,
+    'confirmed',
+    actorFromUser(user),
+    "Reception confirmee par l'acheteur.",
+  );
+
+  // La confirmation de reception vaut liberation immediate des fonds. Si cette
+  // seconde transition echoue, la commande reste 'confirmed' (coherente) : le
+  // versement pourra etre repris manuellement depuis le back-office.
+  try {
+    return await transitionOrder(
+      orderId,
+      'released',
+      { kind: 'system' },
+      'Liberation des fonds apres confirmation de reception.',
+    );
+  } catch (error) {
+    console.error('[orders] liberation impossible apres confirmation', orderId, error);
+    return loadOrder(orderId, 'buyer');
+  }
+}
+
+// Cle de stockage de la photo de reception, pour la route de service protegee
+// (accessible a l'acheteur, au vendeur et aux admins).
+export async function getReceiptPhotoKey(user: AuthUser, orderId: string): Promise<string | null> {
+  const row = await findOrderRow(orderId);
+  if (!row) {
+    throw AppError.notFound('Commande introuvable.');
+  }
+  if (!user.isAdmin && row.buyer_id !== user.id && row.seller_id !== user.id) {
+    throw AppError.notFound('Commande introuvable.');
+  }
+  return row.receipt_photo_url;
 }
 
 export { allowedTransitions };

@@ -360,7 +360,7 @@ export default function Home() {
                     {listing.zone} - {listing.quantityKg} kg dispo (min {listing.minOrderKg} kg)
                   </p>
                   <p className="carte__vendeur">
-                    <span>{listing.seller.shopName}</span>
+                    <Link to={`/vendeurs/${listing.seller.userId}`}>{listing.seller.shopName}</Link>
                     {listing.seller.isVerified ? <span className="badge badge--verifie">Verifie</span> : null}
                     {listing.seller.ratingCount > 0 ? (
                       <span className="carte__note">

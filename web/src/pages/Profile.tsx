@@ -158,6 +158,12 @@ export default function Profile() {
         </button>
       </form>
 
+      {user.isAdmin ? (
+        <p className="page__lien">
+          <Link to="/admin/litiges">Espace admin - Litiges</Link>
+        </p>
+      ) : null}
+
       <button type="button" className="bouton bouton--danger" onClick={onLogout}>
         Se deconnecter
       </button>

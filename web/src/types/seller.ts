@@ -1,5 +1,16 @@
 export type SellerStatus = 'pending' | 'verified' | 'suspended' | 'rejected';
 
+export interface PublicSellerProfile {
+  userId: string;
+  shopName: string;
+  description: string | null;
+  zone: string;
+  status: SellerStatus;
+  isVerified: boolean;
+  ratingAvg: number;
+  ratingCount: number;
+}
+
 export interface SellerOwnProfile {
   userId: string;
   shopName: string;

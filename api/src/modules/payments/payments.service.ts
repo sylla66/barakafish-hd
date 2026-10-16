@@ -383,18 +383,51 @@ export async function retryPayout(payoutId: string): Promise<Payout> {
   return executePayout(row.id, row.amount, { userId: row.seller_id, shopName: row.shop_name });
 }
 
-// ===== Remboursement (quand la commande passe a « refunded ») =====
+// ===== Remboursement (total via « refunded », partiel via une decision de litige) =====
 
-async function refundBuyer(order: Order): Promise<void> {
-  const paymentResult = await pool.query<PaymentRow>(
+async function findRefundablePayment(orderId: string): Promise<PaymentRow | undefined> {
+  const result = await pool.query<PaymentRow>(
     `SELECT id, order_id, provider, provider_reference, amount, status, paid_at, refunded_amount, created_at
        FROM payments
       WHERE order_id = $1 AND status IN ('succeeded', 'refunded')
       ORDER BY created_at DESC
       LIMIT 1`,
-    [order.id],
+    [orderId],
   );
-  const payment = paymentResult.rows[0];
+  return result.rows[0];
+}
+
+// Rembourse un montant sur un paiement et met a jour le cumul rembourse. Le
+// statut ne passe a « refunded » que lorsque le cumul atteint le montant total.
+// L'echec est journalise (l'ordre a deja change d'etat) pour une reprise
+// manuelle, comme pour le remboursement total.
+async function performRefund(orderId: string, payment: PaymentRow, requested: number): Promise<void> {
+  const remaining = payment.amount - payment.refunded_amount;
+  const amount = Math.min(requested, remaining);
+  if (amount <= 0) {
+    return;
+  }
+
+  const provider = getPaymentProvider();
+  try {
+    const result = await provider.refund(payment.id, amount);
+    if (!result.refunded) {
+      throw new Error('remboursement refuse par le fournisseur');
+    }
+    await pool.query(
+      `UPDATE payments
+          SET refunded_amount = refunded_amount + $2,
+              status = CASE WHEN refunded_amount + $2 >= amount THEN 'refunded' ELSE status END
+        WHERE id = $1`,
+      [payment.id, amount],
+    );
+  } catch (error) {
+    console.error('[payments] echec du remboursement pour la commande', orderId, error);
+  }
+}
+
+async function refundBuyer(order: Order): Promise<void> {
+  const payment = await findRefundablePayment(order.id);
   if (!payment) {
     // Court-circuit des tests : remboursement d'une commande jamais payee.
     return;
@@ -415,26 +448,22 @@ async function refundBuyer(order: Order): Promise<void> {
     [order.id],
   );
   const requested = dispute.rows[0]?.refund_amount ?? remaining;
-  const amount = Math.min(requested, remaining);
 
-  const provider = getPaymentProvider();
-  try {
-    const result = await provider.refund(payment.id, amount);
-    if (!result.refunded) {
-      throw new Error('remboursement refuse par le fournisseur');
-    }
-    await pool.query(
-      `UPDATE payments
-          SET refunded_amount = refunded_amount + $2,
-              status = CASE WHEN refunded_amount + $2 >= amount THEN 'refunded' ELSE status END
-        WHERE id = $1`,
-      [payment.id, amount],
-    );
-  } catch (error) {
-    // L'ordre est deja « refunded » : l'echec est journalise pour une reprise
-    // manuelle par l'admin (aucun remboursement perdu silencieusement).
-    console.error('[payments] echec du remboursement pour la commande', order.id, error);
+  await performRefund(order.id, payment, requested);
+}
+
+// Remboursement partiel declenche par une decision de litige (etape 9) : le
+// reste du sequestre est ensuite libere au vendeur par la transition
+// « released » (releaseFunds deduit le montant deja rembourse). Le paiement
+// n'est pas encore « refunded » au moment de l'appel, on reprend donc le
+// montant cumule a jour.
+export async function refundOrderPartially(orderId: string, amount: number): Promise<void> {
+  const payment = await findRefundablePayment(orderId);
+  if (!payment) {
+    // Commande non payee (court-circuit des tests) : rien a rembourser.
+    return;
   }
+  await performRefund(orderId, payment, amount);
 }
 
 // ===== Enregistrement des effets de bord sur la machine a etats =====

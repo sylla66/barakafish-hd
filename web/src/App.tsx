@@ -1,5 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 
+import AdminDisputeDetailPage from './pages/AdminDisputeDetail';
+import AdminDisputes from './pages/AdminDisputes';
 import BecomeSeller from './pages/BecomeSeller';
 import CreateListing from './pages/CreateListing';
 import Home from './pages/Home';
@@ -10,6 +12,7 @@ import OrderCreate from './pages/OrderCreate';
 import OrderDetail from './pages/OrderDetail';
 import PaymentReturn from './pages/PaymentReturn';
 import Profile from './pages/Profile';
+import SellerProfile from './pages/SellerProfile';
 import SellerStatusPage from './pages/SellerStatus';
 
 // Routes de base. Les ecrans des etapes suivantes (annonces, commandes...)
@@ -26,8 +29,11 @@ export default function App() {
       <Route path="/vendeur/annonces/nouvelle" element={<CreateListing />} />
       <Route path="/commandes" element={<MyOrders />} />
       <Route path="/commandes/:id" element={<OrderDetail />} />
+      <Route path="/vendeurs/:id" element={<SellerProfile />} />
       <Route path="/commander/:listingId" element={<OrderCreate />} />
       <Route path="/paiement/:reference" element={<PaymentReturn />} />
+      <Route path="/admin/litiges" element={<AdminDisputes />} />
+      <Route path="/admin/litiges/:id" element={<AdminDisputeDetailPage />} />
     </Routes>
   );
 }
