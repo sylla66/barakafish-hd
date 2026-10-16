@@ -13,11 +13,12 @@ function render(template: NotificationTemplateKey, params: Record<string, string
   let text = NOTIFICATION_TEMPLATES[template] as string;
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === null) continue;
-    text = text.replace(new RegExp(`\{${key}\}`, 'g'), String(value));
+    text = text.replace(new RegExp(`{${key}}`, 'g'), String(value));
     text = text.replace(new RegExp(`#${key}`, 'g'), String(value));
   }
   return text;
 }
+
 export interface NotifyParams {
   userId: string;
   template: NotificationTemplateKey;
